@@ -1,13 +1,13 @@
 import path from "path";
 import { Configuration } from "webpack";
-import 'webpack-dev-server';
-import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import "webpack-dev-server";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 
 const config: Configuration = {
   entry: "./src/index.ts",
   plugins: [
     new ForkTsCheckerWebpackPlugin({
-      async: false
+      async: false,
     }),
   ],
   module: {
@@ -25,7 +25,7 @@ const config: Configuration = {
     ],
   },
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".ts", ".js", ".json"],
   },
   output: {
     path: path.resolve(__dirname, "dist"),
