@@ -12,5 +12,5 @@ for (let i = 0; i < d.length; i++) {
   });
 }
 
-let chart1 = new ZoneOccupancyChart("oc-chart", data, 500, 400);
+let chart1 = new ZoneOccupancyChart("oc-chart", data, 600, 500);
 chart1.DrawChart();

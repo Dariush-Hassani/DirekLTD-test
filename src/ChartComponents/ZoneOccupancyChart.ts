@@ -13,18 +13,18 @@ class ZoneOccupancyChart {
 
   public config = {
     EmptySpaceBetweenBars: 50, //(px)
-    marginTop: 20,
-    marginLeft: 40,
+    marginTop: 0,
+    marginLeft: 0,
     marginBottom: 0,
     marginRight: 0,
-    paddingTop: 20,
-    paddingLeft: 40,
+    paddingTop: 120,
+    paddingLeft: 100,
     paddingBottom: 40,
     paddingRight: 0,
   };
 
   //private fields
-  private _id: string;
+  private readonly _id: string;
   private _data: ZoneOccupancyDataType[];
   private _width: number;
   private _height: number;
@@ -60,6 +60,78 @@ class ZoneOccupancyChart {
       .style("position", "relative")
       .style("left", `${this.config.marginLeft}px`)
       .style("top", `${this.config.marginTop}px`);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .text("Zone Occupancy")
+      .style("fill", this.colorPalette.textBold)
+      .style("font-size", "22px")
+      .style("font-weight", "600")
+      .attr("y", "24")
+      .attr("x", "0")
+      .style("font-family", "Montserrat");
+  }
+
+  private SetupLegends(): void {
+    d3.select(`#${this._id} svg`)
+      .append("g")
+      .attr("y", "44")
+      .attr("class", "legend");
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("circle")
+      .attr("cy", "55")
+      .attr("cx", "10")
+      .attr("r", "10")
+      .attr("fill", this.colorPalette.AverageColor);
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("text")
+      .text("Average")
+      .attr("y", "61")
+      .attr("x", "27")
+      .style("font-family", "Montserrat")
+      .style("fill", this.colorPalette.textBold)
+      .style("font-size", "16px")
+      .style("font-weight", "600");
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("circle")
+      .attr("cy", "55")
+      .attr("cx", "120")
+      .attr("r", "10")
+      .attr("fill", this.colorPalette.CapacityColor);
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("text")
+      .text("Capacity")
+      .attr("y", "61")
+      .attr("x", "136")
+      .style("font-family", "Montserrat")
+      .style("fill", this.colorPalette.textBold)
+      .style("font-size", "16px")
+      .style("font-weight", "600");
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("line")
+      .attr("y1", "55")
+      .attr("y2", "55")
+      .attr("x1", "230")
+      .attr("x2", "290")
+      .attr("r", "10")
+      .style("stroke-width", "2")
+      .style("stroke-dasharray", "4")
+      .attr("stroke", this.colorPalette.PeakColor);
+
+    d3.select(`#${this._id} svg .legend`)
+      .append("text")
+      .text("Peak")
+      .attr("y", "61")
+      .attr("x", "300")
+      .style("font-family", "Montserrat")
+      .style("fill", this.colorPalette.textBold)
+      .style("font-size", "16px")
+      .style("font-weight", "600");
   }
   private SetupScaleFunctions(): void {
     this._xScaleFunction = d3
@@ -118,10 +190,7 @@ class ZoneOccupancyChart {
   private SetupYAxis(): void {
     let tickSize =
       this._chartWidth - (this.config.paddingRight + this.config.paddingLeft);
-    let yAxis = d3
-      .axisRight(this._yScaleFunction)
-      .tickSize(tickSize)
-      .ticks(this._chartHeight / 50);
+    let yAxis = d3.axisRight(this._yScaleFunction).tickSize(tickSize).ticks(6);
     d3.select(`#${this._id} svg`)
       .append("g")
       .attr("class", "yAxis")
@@ -145,6 +214,21 @@ class ZoneOccupancyChart {
     d3.selectAll(`#${this._id} .yAxis g line`)
       .style("stroke", `${this.colorPalette.ticks}`)
       .style("stroke-width", `2px`);
+
+    let ySpaceName = (
+      document.querySelector(
+        `#${this._id} svg .xAxis .tick text`,
+      ) as HTMLElement
+    ).getAttribute("y") as string;
+
+    d3.select(`#${this._id} svg .yAxis g text`)
+      .style("font-size", "12px")
+      .style("font-family", "Montserrat")
+      .attr("y", parseInt(ySpaceName) + 25)
+      .text("space names")
+      .attr("x", -this.config.paddingLeft + 10)
+      .style("transform", `translate(0,0)`)
+      .style("color", `${this.colorPalette.textThin}`);
   }
 
   private DrawBars(barType: "Capacity" | "Average"): void {
@@ -279,6 +363,7 @@ class ZoneOccupancyChart {
   //public methods
   public DrawChart(): void {
     this.SetupLayout();
+    this.SetupLegends();
     this.SetupScaleFunctions();
     this.SetupXAxis();
     this.SetupYAxis();
