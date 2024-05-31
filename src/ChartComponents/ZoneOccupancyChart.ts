@@ -228,13 +228,13 @@ class ZoneOccupancyChart {
     d3.select(`#${this._id} svg .yAxis`)
       .append("text")
       .style("font-size", "12px")
-      .style("font-weight", "100")
+      .style("font-weight", "bold")
       .style("font-family", "Montserrat")
       .attr("y", parseInt(ySpaceName) + 25)
       .text("space names")
       .attr("x", -this.config.paddingLeft + 10)
       .style("transform", `translate(0,0)`)
-      .attr("stroke", this.colorPalette.textThin);
+      .attr("fill", this.colorPalette.textThin);
   }
 
   private DrawBars(barType: "Capacity" | "Average"): void {
@@ -486,6 +486,72 @@ class ZoneOccupancyChart {
           .style("filter", "drop-shadow( -3px -1px 10px rgba(1, 1, 1, .1))")
           .attr("rx", 7)
           .attr("ry", 7);
+
+        d3.select(`#${this._id} svg`)
+          .append("text")
+          .attr(
+            "x",
+            isRight
+              ? leftPos - fractionSpace + 15
+              : rightPos - infoContainerWidth + fractionSpace + 15,
+          )
+          .attr("y", upPos + 25)
+          .attr("class", `info-text-${thisIndex}`)
+          .text("*Click and see details.")
+          .style("font-family", "Montserrat")
+          .style("font-weight", "bold")
+          .style("font-size", "14px")
+          .style("fill", this.colorPalette.textBold);
+
+        d3.select(`#${this._id} svg`)
+          .append("text")
+          .attr(
+            "x",
+            isRight
+              ? leftPos - fractionSpace + 15
+              : rightPos - infoContainerWidth + fractionSpace + 15,
+          )
+          .attr("y", upPos + 45)
+          .attr("class", `info-text-${thisIndex}`)
+          .text(`Average: ${this._data[thisIndex].Average.toFixed(2)}`)
+          .style("font-family", "Montserrat")
+          .style("font-weight", "bold")
+          .style("font-size", "14px")
+          .style("fill", this.colorPalette.AverageColor);
+
+        d3.select(`#${this._id} svg`)
+          .append("text")
+          .attr(
+            "x",
+            isRight
+              ? leftPos - fractionSpace + 15
+              : rightPos - infoContainerWidth + fractionSpace + 15,
+          )
+          .attr("y", upPos + 65)
+          .attr("class", `info-text-${thisIndex}`)
+          .text(
+            `Capacity: ${this._data[thisIndex].Capacity.toFixed(0)} occupant`,
+          )
+          .style("font-family", "Montserrat")
+          .style("font-weight", "bold")
+          .style("font-size", "14px")
+          .style("fill", this.colorPalette.CapacityColor);
+
+        d3.select(`#${this._id} svg`)
+          .append("text")
+          .attr(
+            "x",
+            isRight
+              ? leftPos - fractionSpace + 15
+              : rightPos - infoContainerWidth + fractionSpace + 15,
+          )
+          .attr("y", upPos + 85)
+          .attr("class", `info-text-${thisIndex}`)
+          .text(`Peak: ${this._data[thisIndex].Peak.toFixed(0)}`)
+          .style("font-family", "Montserrat")
+          .style("font-weight", "bold")
+          .style("font-size", "14px")
+          .style("fill", this.colorPalette.PeakColor);
       })
       .on("mouseleave", (e, d) => {
         let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
@@ -505,6 +571,7 @@ class ZoneOccupancyChart {
             d3.selectAll(`#${this._id} .focus-border-${i}`).remove();
             d3.selectAll(`#${this._id} .info-container-${i}`).remove();
             d3.selectAll(`#${this._id} .triangle-${i}`).remove();
+            d3.selectAll(`#${this._id} .info-text-${i}`).remove();
           }
         }
       });
