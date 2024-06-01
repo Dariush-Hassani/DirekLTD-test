@@ -323,11 +323,7 @@ class ZoneAnalyticsChart {
       .style("stroke-dasharray", `6px`);
   }
 
-  private hoverEnterListener(
-    d: TimeUsageWeekDaysDataType,
-    barWidth: number,
-    bandwidth: number,
-  ) {
+  private hoverEnterListener(d: TimeUsageWeekDaysDataType, barWidth: number) {
     if (this._onTransition) return;
     let thisIndex = this._data.TimeUsageWeekdays.findIndex(
       (x) => x.weekday === d.weekday,
@@ -491,10 +487,10 @@ class ZoneAnalyticsChart {
       .attr("fill", "rgba(0,0,0,0)")
       .style("cursor", "pointer")
       .on("mouseenter", (e, d) => {
-        this.hoverEnterListener(d, barWidth, bandwidth);
+        this.hoverEnterListener(d, barWidth);
       })
       .on("touchstart", (e, d) => {
-        this.hoverEnterListener(d, barWidth, bandwidth);
+        this.hoverEnterListener(d, barWidth);
       })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
