@@ -385,10 +385,10 @@ class ZoneAnalyticsChart {
       }
     }
 
-    let infoContainerWidth = 220;
+    let infoContainerWidth = 190;
     let infoContainerHeight = 100;
     let isRight =
-      thisIndex < Math.floor(this._data.TimeUsageWeekdays.length / 2);
+      thisIndex < Math.floor(this._data.TimeUsageWeekdays.length / 3);
     let currentBar = document.querySelector(
       `#${this._id} svg .handler-bars-${thisIndex}`,
     ) as HTMLElement;
@@ -432,7 +432,7 @@ class ZoneAnalyticsChart {
       .text(`Empty Use: ${formatHoursMinuts(d.EmptyHoursStr)}`)
       .style("font-family", "Montserrat")
       .style("font-weight", "bold")
-      .style("font-size", "14px")
+      .style("font-size", "12px")
       .style("fill", this.colorPalette.emptyColor);
 
     d3.select(`#${this._id} svg`)
@@ -443,7 +443,7 @@ class ZoneAnalyticsChart {
       .text(`UnderUtilised Use: ${formatHoursMinuts(d.UnderUtilisedHoursStr)}`)
       .style("font-family", "Montserrat")
       .style("font-weight", "bold")
-      .style("font-size", "14px")
+      .style("font-size", "12px")
       .style("fill", this.colorPalette.underUtilisedColor);
 
     d3.select(`#${this._id} svg`)
@@ -454,7 +454,7 @@ class ZoneAnalyticsChart {
       .text(`Normal Use: ${formatHoursMinuts(d.NormalHoursStr)}`)
       .style("font-family", "Montserrat")
       .style("font-weight", "bold")
-      .style("font-size", "14px")
+      .style("font-size", "12px")
       .style("fill", this.colorPalette.NormalColor);
 
     d3.select(`#${this._id} svg`)
@@ -465,7 +465,7 @@ class ZoneAnalyticsChart {
       .text(`OverUtilised Use: ${formatHoursMinuts(d.OverUtilisedHoursStr)}`)
       .style("font-family", "Montserrat")
       .style("font-weight", "bold")
-      .style("font-size", "14px")
+      .style("font-size", "12px")
       .style("fill", this.colorPalette.OverUtilisedColor);
   }
 
