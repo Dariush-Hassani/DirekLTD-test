@@ -25,6 +25,8 @@ class ZoneOccupancyChart {
     opacityHover: 0.6,
     focusBorderEmptySpace: 8,
     infoTriangleWidth: 8,
+    transitionDuration: 1000,
+    transitionDelay: 100,
   };
 
   public ChangeStateCallBack: any;
@@ -38,6 +40,7 @@ class ZoneOccupancyChart {
   private _chartHeight: number;
   private _xScaleFunction: d3.ScaleBand<string> = d3.scaleBand();
   private _yScaleFunction: d3.ScaleLinear<number, number> = d3.scaleLinear();
+  private _onTransition: boolean = false;
 
   public constructor(
     id: string,
@@ -179,10 +182,6 @@ class ZoneOccupancyChart {
         "transform",
         `translate(${this.config.paddingLeft}px,${this.config.paddingTop}px)`,
       )
-      // .style(
-      //   "transform",
-      //   `translate(0,${this._chartHeight - this.config.paddingBottom}px)`,
-      // )
       .call(xAxis);
 
     d3.select(`#${this._id} svg g path`).style("stroke", "none");
@@ -242,6 +241,7 @@ class ZoneOccupancyChart {
   }
 
   private DrawBars(barType: "Capacity" | "Average"): void {
+    this._onTransition = true;
     let bandwidth = this._xScaleFunction.bandwidth();
     let barWidth = bandwidth - this.config.EmptySpaceBetweenBars;
 
@@ -261,8 +261,8 @@ class ZoneOccupancyChart {
         (d) => this._yScaleFunction(d[barType]) + this.config.paddingTop,
       )
       .transition()
-      .duration(700)
-      .delay(100)
+      .duration(this.config.transitionDuration)
+      .delay(this.config.transitionDelay)
       .ease(d3.easeSinInOut)
       .attr(
         "height",
@@ -284,6 +284,10 @@ class ZoneOccupancyChart {
       )
       .attr("rx", 7)
       .attr("ry", 7);
+
+    setTimeout(() => {
+      this._onTransition = false;
+    }, this.config.transitionDuration + this.config.transitionDelay);
   }
 
   private ModifyBottomRadius(): void {
@@ -377,6 +381,7 @@ class ZoneOccupancyChart {
     barWidth: number,
     bandwidth: number,
   ) {
+    if (this._onTransition) return;
     let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
 
     d3.select(`#${this._id} svg`)
@@ -538,6 +543,8 @@ class ZoneOccupancyChart {
   }
 
   private hoverLeaveListener(d: ZoneOccupancyDataType) {
+    if (this._onTransition) return;
+
     let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
 
     for (let i = 0; i < this._data.length; i++) {
@@ -615,7 +622,10 @@ class ZoneOccupancyChart {
     this.SetupYAxis();
     this.DrawBars("Capacity");
     this.DrawBars("Average");
-    this.ModifyBottomRadius();
+    setTimeout(
+      () => this.ModifyBottomRadius(),
+      this.config.transitionDuration + this.config.transitionDelay,
+    );
     this.DrawPeaks();
     this.DrawBarsListeners();
   }

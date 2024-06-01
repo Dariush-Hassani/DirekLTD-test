@@ -1,6 +1,10 @@
 import ZoneOccupancyChart from "./ZoneOccupancyChart";
 import * as d3 from "d3";
 import ZoneAnalyticsChart from "./ZoneAnalyticsChart";
+import ZoneAnalyticsDataType, {
+  TimeUsageWeekDaysDataType,
+} from "../Types/ZoneAnalyticsDataType";
+import { getWeekDayName } from "../_helper";
 
 class ZoneAndTime {
   //private fields
@@ -90,12 +94,54 @@ class ZoneAndTime {
   }
   public DrawState2() {
     if (this._ZOChart) this._ZOChart.Destroy();
+
     d3.select(`#${this._id} div`).append("div").attr("id", `${this._id}-con`);
     d3.select(`#${this._id} div .meeting-text`)
       .html("&nbsp; Meeting Rooms /&nbsp;")
       .style("color", this.colorPalette.title);
     d3.select(`#${this._id} div .zone-text`).text(`${this._selectedZone}`);
-    this._ZAChart = new ZoneAnalyticsChart(`${this._id}-con`);
+
+    let dataIndex = this._data.findIndex(
+      (x: any) => x.Zone === this._selectedZone,
+    );
+    let data: any = this._data[dataIndex];
+
+    try {
+      let timeUsageWeekdaysData: TimeUsageWeekDaysDataType[] = [];
+      for (let i = 0; i < data?.TimeUsageWeekdays.length; i++) {
+        let timeUsageWeekDay: any = data?.TimeUsageWeekdays[i];
+        timeUsageWeekdaysData.push({
+          weekday: timeUsageWeekDay.weekday as number,
+          weekdayName: getWeekDayName(
+            timeUsageWeekDay.weekday as number,
+          ) as string,
+          EmptyHours: timeUsageWeekDay.Empty_Hours as number,
+          EmptyHoursStr: timeUsageWeekDay.Empty_String as string,
+          NormalHours: timeUsageWeekDay.Normal_Hours as number,
+          NormalHoursStr: timeUsageWeekDay.Normal_String as string,
+          OverUtilisedHours: timeUsageWeekDay.OverUtilised_Hours as number,
+          OverUtilisedHoursStr: timeUsageWeekDay.OverUtilised_String as string,
+          UnderUtilisedHours: timeUsageWeekDay.UnderUtilised_Hours as number,
+          UnderUtilisedHoursStr:
+            timeUsageWeekDay.UnderUtilised_String as string,
+        });
+      }
+      let ZoneAnalyticsData: ZoneAnalyticsDataType = {
+        AverageTimeUsageHours: data?.AverageTimeUsage_Hours as number,
+        AverageTimeUsageHoursStr: data?.AverageTimeUsage_String as string,
+        WorkingHours: data?.WorkingHours as number,
+        TimeUsageWeekdays: timeUsageWeekdaysData,
+      };
+      this._ZAChart = new ZoneAnalyticsChart(
+        `${this._id}-con`,
+        ZoneAnalyticsData,
+        this._width,
+        this._height - 130,
+      );
+      this._ZAChart.DrawChart();
+    } catch (error) {
+      throw new Error("Data not valid!");
+    }
   }
   public DrawChart() {
     this.SetupLayout();
