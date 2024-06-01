@@ -599,13 +599,13 @@ class ZoneOccupancyChart {
       .on("mouseenter", (e, d) => {
         this.hoverEnterListener(d, barWidth, bandwidth);
       })
-      .on("touchend", (e, d) => {
+      .on("touchstart", (e, d) => {
         this.hoverEnterListener(d, barWidth, bandwidth);
       })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
       })
-      .on("touchstart", (e, d) => {
+      .on("touchend", (e, d) => {
         this.hoverLeaveListener(d);
       })
       .on("click", (e, d) => {
