@@ -605,9 +605,6 @@ class ZoneOccupancyChart {
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
       })
-      .on("touchend", (e, d) => {
-        this.hoverLeaveListener(d);
-      })
       .on("click", (e, d) => {
         if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
       });
