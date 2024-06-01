@@ -528,13 +528,15 @@ class ZoneAnalyticsChart {
       .on("mouseenter", (e, d) => {
         this.hoverEnterListener(d, barWidth);
       })
-      .on("click", (e, d) => {
+      .on("touchstart", (e, d) => {
+        e.preventDefault();
         this.hoverEnterListener(d, barWidth);
       })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
       })
       .on("touchend", (e, d) => {
+        e.preventDefault();
         this.hoverLeaveListener(d);
       });
   }

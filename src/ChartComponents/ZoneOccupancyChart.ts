@@ -599,16 +599,18 @@ class ZoneOccupancyChart {
       .on("mouseenter", (e, d) => {
         this.hoverEnterListener(d, barWidth, bandwidth);
       })
-      .on("touchstart", (e, d) => {})
+      .on("touchstart", (e, d) => {
+        e.preventDefault();
+        this.hoverEnterListener(d, barWidth, bandwidth);
+      })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
       })
       .on("touchend", (e, d) => {
+        e.preventDefault();
         this.hoverLeaveListener(d);
       })
       .on("click", (e, d) => {
-        this.hoverEnterListener(d, barWidth, bandwidth);
-
         if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
       });
   }
