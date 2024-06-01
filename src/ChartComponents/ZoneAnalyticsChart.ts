@@ -533,6 +533,9 @@ class ZoneAnalyticsChart {
       })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
+      })
+      .on("touchstart", (e, d) => {
+        this.hoverLeaveListener(d);
       });
   }
 
