@@ -27,6 +27,8 @@ class ZoneOccupancyChart {
     infoTriangleWidth: 8,
   };
 
+  public ChangeStateCallBack: any;
+
   //private fields
   private readonly _id: string;
   private _data: ZoneOccupancyDataType[];
@@ -42,6 +44,7 @@ class ZoneOccupancyChart {
     data: ZoneOccupancyDataType[],
     width: number,
     height: number,
+    changeStateCallBack: any,
   ) {
     this._id = id;
     this._data = data;
@@ -51,6 +54,7 @@ class ZoneOccupancyChart {
       width - (this.config.marginLeft + this.config.marginRight);
     this._chartHeight =
       height - (this.config.marginBottom + this.config.marginTop);
+    this.ChangeStateCallBack = changeStateCallBack;
   }
 
   //private methods
@@ -362,6 +366,194 @@ class ZoneOccupancyChart {
       .attr("stroke-dasharray", "5");
   }
 
+  private hoverEnterListener(
+    d: ZoneOccupancyDataType,
+    barWidth: number,
+    bandwidth: number,
+  ) {
+    let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
+
+    d3.select(`#${this._id} svg`)
+      .append("rect")
+      .attr(
+        "x",
+        this.config.paddingLeft +
+          (thisIndex + 0.5) * bandwidth -
+          barWidth / 2 -
+          this.config.focusBorderEmptySpace,
+      )
+      .attr("width", barWidth + this.config.focusBorderEmptySpace * 2)
+      .attr(
+        "y",
+        this._yScaleFunction(this._data[thisIndex].Capacity) +
+          this.config.paddingTop -
+          this.config.focusBorderEmptySpace,
+      )
+      .attr(
+        "height",
+        this._chartHeight -
+          (this.config.paddingBottom + this.config.paddingTop) -
+          this._yScaleFunction(this._data[thisIndex].Capacity) +
+          this.config.focusBorderEmptySpace * 2,
+      )
+      .attr("stroke", this.colorPalette.focusBorder)
+      .attr("stroke-width", "2px")
+      .attr("class", `focus-border-${thisIndex} focus-border`)
+      .attr("fill", "none")
+      .attr("rx", "7")
+      .attr("ry", "7")
+      .style("opacity", "0")
+      .transition()
+      .style("opacity", "1");
+
+    for (let i = 0; i < this._data.length; i++) {
+      if (i !== thisIndex) {
+        d3.select(`#${this._id} .bar-peak-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+        d3.selectAll(`#${this._id} .bar-avg-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+        d3.selectAll(`#${this._id} .bar-cap-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+      }
+    }
+
+    let infoContainerWidth = 200;
+    let infoContainerHeight = 100;
+    let isRight = thisIndex < Math.ceil(this._data.length / 2);
+    let fractionSpace = this.config.EmptySpaceBetweenBars / 3;
+    let fractionSpaceY = 1;
+    let currentBar = document.querySelector(
+      `#${this._id} svg .bar-cap-${thisIndex}`,
+    ) as HTMLElement;
+    let upPos =
+      this._chartHeight -
+      this.config.paddingBottom -
+      parseInt(currentBar.getAttribute("height") as string) +
+      fractionSpaceY -
+      infoContainerHeight;
+
+    let leftPos = parseInt(currentBar.getAttribute("x") as string);
+    let rightPos = parseInt(currentBar.getAttribute("x") as string) + barWidth;
+    let centerPos =
+      parseInt(currentBar.getAttribute("x") as string) + barWidth / 2;
+
+    d3.select(`#${this._id} svg`)
+      .append("polygon")
+      .attr(
+        "points",
+        `${centerPos - this.config.infoTriangleWidth},${upPos + infoContainerHeight - 1} ${centerPos + this.config.infoTriangleWidth},${upPos + infoContainerHeight - 1} ${centerPos},${upPos + infoContainerHeight + this.config.infoTriangleWidth}`,
+      )
+      .attr("class", `triangle-${thisIndex}`)
+      .attr("fill", "white");
+
+    d3.select(`#${this._id} svg`)
+      .append("rect")
+      .attr("y", upPos)
+      .attr(
+        "x",
+        isRight
+          ? leftPos - fractionSpace
+          : rightPos - infoContainerWidth + fractionSpace,
+      )
+      .attr("width", infoContainerWidth)
+      .attr("height", infoContainerHeight)
+      .attr("fill", "white")
+      .attr("class", `info-container-${thisIndex}`)
+      .style("filter", "drop-shadow( -3px -1px 10px rgba(1, 1, 1, .1))")
+      .attr("rx", 7)
+      .attr("ry", 7);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr(
+        "x",
+        isRight
+          ? leftPos - fractionSpace + 15
+          : rightPos - infoContainerWidth + fractionSpace + 15,
+      )
+      .attr("y", upPos + 25)
+      .attr("class", `info-text-${thisIndex}`)
+      .text("*Click and see details.")
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.textBold);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr(
+        "x",
+        isRight
+          ? leftPos - fractionSpace + 15
+          : rightPos - infoContainerWidth + fractionSpace + 15,
+      )
+      .attr("y", upPos + 45)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`Average: ${this._data[thisIndex].Average.toFixed(2)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.AverageColor);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr(
+        "x",
+        isRight
+          ? leftPos - fractionSpace + 15
+          : rightPos - infoContainerWidth + fractionSpace + 15,
+      )
+      .attr("y", upPos + 65)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`Capacity: ${this._data[thisIndex].Capacity.toFixed(0)} occupant`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.CapacityColor);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr(
+        "x",
+        isRight
+          ? leftPos - fractionSpace + 15
+          : rightPos - infoContainerWidth + fractionSpace + 15,
+      )
+      .attr("y", upPos + 85)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`Peak: ${this._data[thisIndex].Peak.toFixed(0)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.PeakColor);
+  }
+
+  private hoverLeaveListener(d: ZoneOccupancyDataType) {
+    let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
+
+    for (let i = 0; i < this._data.length; i++) {
+      if (i !== thisIndex) {
+        d3.select(`#${this._id} .bar-peak-${i}`)
+          .transition()
+          .style("opacity", 1);
+        d3.selectAll(`#${this._id} .bar-avg-${i}`)
+          .transition()
+          .style("opacity", 1);
+        d3.selectAll(`#${this._id} .bar-cap-${i}`)
+          .transition()
+          .style("opacity", 1);
+      } else {
+        d3.selectAll(`#${this._id} .focus-border-${i}`).remove();
+        d3.selectAll(`#${this._id} .info-container-${i}`).remove();
+        d3.selectAll(`#${this._id} .triangle-${i}`).remove();
+        d3.selectAll(`#${this._id} .info-text-${i}`).remove();
+      }
+    }
+  }
+
   private DrawBarsListeners(): void {
     let bandwidth = this._xScaleFunction.bandwidth();
     let barWidth = bandwidth - this.config.EmptySpaceBetweenBars;
@@ -388,192 +580,23 @@ class ZoneOccupancyChart {
           (this.config.paddingBottom + this.config.paddingTop) -
           this._yScaleFunction(d.Capacity),
       )
+      .attr("class", "handler-bars")
       .attr("fill", "rgba(0,0,0,0)")
       .style("cursor", "pointer")
       .on("mouseenter", (e, d) => {
-        let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
-
-        d3.select(`#${this._id} svg`)
-          .append("rect")
-          .attr(
-            "x",
-            this.config.paddingLeft +
-              (thisIndex + 0.5) * bandwidth -
-              barWidth / 2 -
-              this.config.focusBorderEmptySpace,
-          )
-          .attr("width", barWidth + this.config.focusBorderEmptySpace * 2)
-          .attr(
-            "y",
-            this._yScaleFunction(this._data[thisIndex].Capacity) +
-              this.config.paddingTop -
-              this.config.focusBorderEmptySpace,
-          )
-          .attr(
-            "height",
-            this._chartHeight -
-              (this.config.paddingBottom + this.config.paddingTop) -
-              this._yScaleFunction(this._data[thisIndex].Capacity) +
-              this.config.focusBorderEmptySpace * 2,
-          )
-          .attr("stroke", this.colorPalette.focusBorder)
-          .attr("stroke-width", "2px")
-          .attr("class", `focus-border-${thisIndex} focus-border`)
-          .attr("fill", "none")
-          .attr("rx", "7")
-          .attr("ry", "7")
-          .style("opacity", "0")
-          .transition()
-          .style("opacity", "1");
-
-        for (let i = 0; i < this._data.length; i++) {
-          if (i !== thisIndex) {
-            d3.select(`#${this._id} .bar-peak-${i}`)
-              .transition()
-              .style("opacity", this.config.opacityHover);
-            d3.selectAll(`#${this._id} .bar-avg-${i}`)
-              .transition()
-              .style("opacity", this.config.opacityHover);
-            d3.selectAll(`#${this._id} .bar-cap-${i}`)
-              .transition()
-              .style("opacity", this.config.opacityHover);
-          }
-        }
-
-        let infoContainerWidth = 200;
-        let infoContainerHeight = 100;
-        let isRight = thisIndex < Math.ceil(this._data.length / 2);
-        let fractionSpace = this.config.EmptySpaceBetweenBars / 3;
-        let fractionSpaceY = 1;
-        let currentBar = document.querySelector(
-          `#${this._id} svg .bar-cap-${thisIndex}`,
-        ) as HTMLElement;
-        let upPos =
-          this._chartHeight -
-          this.config.paddingBottom -
-          parseInt(currentBar.getAttribute("height") as string) +
-          fractionSpaceY -
-          infoContainerHeight;
-
-        let leftPos = parseInt(currentBar.getAttribute("x") as string);
-        let rightPos =
-          parseInt(currentBar.getAttribute("x") as string) + barWidth;
-        let centerPos =
-          parseInt(currentBar.getAttribute("x") as string) + barWidth / 2;
-
-        d3.select(`#${this._id} svg`)
-          .append("polygon")
-          .attr(
-            "points",
-            `${centerPos - this.config.infoTriangleWidth},${upPos + infoContainerHeight - 1} ${centerPos + this.config.infoTriangleWidth},${upPos + infoContainerHeight - 1} ${centerPos},${upPos + infoContainerHeight + this.config.infoTriangleWidth}`,
-          )
-          .attr("class", `triangle-${thisIndex}`)
-          .attr("fill", "white");
-
-        d3.select(`#${this._id} svg`)
-          .append("rect")
-          .attr("y", upPos)
-          .attr(
-            "x",
-            isRight
-              ? leftPos - fractionSpace
-              : rightPos - infoContainerWidth + fractionSpace,
-          )
-          .attr("width", infoContainerWidth)
-          .attr("height", infoContainerHeight)
-          .attr("fill", "white")
-          .attr("class", `info-container-${thisIndex}`)
-          .style("filter", "drop-shadow( -3px -1px 10px rgba(1, 1, 1, .1))")
-          .attr("rx", 7)
-          .attr("ry", 7);
-
-        d3.select(`#${this._id} svg`)
-          .append("text")
-          .attr(
-            "x",
-            isRight
-              ? leftPos - fractionSpace + 15
-              : rightPos - infoContainerWidth + fractionSpace + 15,
-          )
-          .attr("y", upPos + 25)
-          .attr("class", `info-text-${thisIndex}`)
-          .text("*Click and see details.")
-          .style("font-family", "Montserrat")
-          .style("font-weight", "bold")
-          .style("font-size", "14px")
-          .style("fill", this.colorPalette.textBold);
-
-        d3.select(`#${this._id} svg`)
-          .append("text")
-          .attr(
-            "x",
-            isRight
-              ? leftPos - fractionSpace + 15
-              : rightPos - infoContainerWidth + fractionSpace + 15,
-          )
-          .attr("y", upPos + 45)
-          .attr("class", `info-text-${thisIndex}`)
-          .text(`Average: ${this._data[thisIndex].Average.toFixed(2)}`)
-          .style("font-family", "Montserrat")
-          .style("font-weight", "bold")
-          .style("font-size", "14px")
-          .style("fill", this.colorPalette.AverageColor);
-
-        d3.select(`#${this._id} svg`)
-          .append("text")
-          .attr(
-            "x",
-            isRight
-              ? leftPos - fractionSpace + 15
-              : rightPos - infoContainerWidth + fractionSpace + 15,
-          )
-          .attr("y", upPos + 65)
-          .attr("class", `info-text-${thisIndex}`)
-          .text(
-            `Capacity: ${this._data[thisIndex].Capacity.toFixed(0)} occupant`,
-          )
-          .style("font-family", "Montserrat")
-          .style("font-weight", "bold")
-          .style("font-size", "14px")
-          .style("fill", this.colorPalette.CapacityColor);
-
-        d3.select(`#${this._id} svg`)
-          .append("text")
-          .attr(
-            "x",
-            isRight
-              ? leftPos - fractionSpace + 15
-              : rightPos - infoContainerWidth + fractionSpace + 15,
-          )
-          .attr("y", upPos + 85)
-          .attr("class", `info-text-${thisIndex}`)
-          .text(`Peak: ${this._data[thisIndex].Peak.toFixed(0)}`)
-          .style("font-family", "Montserrat")
-          .style("font-weight", "bold")
-          .style("font-size", "14px")
-          .style("fill", this.colorPalette.PeakColor);
+        this.hoverEnterListener(d, barWidth, bandwidth);
+      })
+      .on("touchstart", (e, d) => {
+        this.hoverEnterListener(d, barWidth, bandwidth);
       })
       .on("mouseleave", (e, d) => {
-        let thisIndex = this._data.findIndex((x) => x.Zone === d.Zone);
-
-        for (let i = 0; i < this._data.length; i++) {
-          if (i !== thisIndex) {
-            d3.select(`#${this._id} .bar-peak-${i}`)
-              .transition()
-              .style("opacity", 1);
-            d3.selectAll(`#${this._id} .bar-avg-${i}`)
-              .transition()
-              .style("opacity", 1);
-            d3.selectAll(`#${this._id} .bar-cap-${i}`)
-              .transition()
-              .style("opacity", 1);
-          } else {
-            d3.selectAll(`#${this._id} .focus-border-${i}`).remove();
-            d3.selectAll(`#${this._id} .info-container-${i}`).remove();
-            d3.selectAll(`#${this._id} .triangle-${i}`).remove();
-            d3.selectAll(`#${this._id} .info-text-${i}`).remove();
-          }
-        }
+        this.hoverLeaveListener(d);
+      })
+      .on("touchend", (e, d) => {
+        this.hoverLeaveListener(d);
+      })
+      .on("click", (e, d) => {
+        if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
       });
   }
 
@@ -589,6 +612,15 @@ class ZoneOccupancyChart {
     this.ModifyBottomRadius();
     this.DrawPeaks();
     this.DrawBarsListeners();
+  }
+
+  public Destroy() {
+    d3.selectAll(`#${this._id} svg .handler-bars`)
+      .on("mouseenter", null)
+      .on("mouseleave", null)
+      .on("touchstart", null)
+      .on("touchend", null);
+    d3.selectAll(`#${this._id}`).remove();
   }
 
   // public ChangeDimension(width: number, height: number): void {
