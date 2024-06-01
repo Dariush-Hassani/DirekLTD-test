@@ -323,6 +323,45 @@ class ZoneAnalyticsChart {
       .style("stroke-dasharray", `6px`);
   }
 
+  private DrawAverageLine() {
+    let value =
+      this._yScaleFunction(this._data.AverageTimeUsageHours) +
+      this.config.paddingTop;
+    d3.select(`#${this._id} svg`)
+      .append("line")
+      .attr("x1", this.config.paddingLeft + 10)
+      .attr("x2", this._chartWidth - this.config.paddingRight)
+      .attr("y1", value)
+      .attr("y2", value)
+      .attr("stroke", this.colorPalette.focusBorder)
+      .style("stroke-dasharray", "6px")
+      .attr("stroke-width", 2);
+
+    d3.select(`#${this._id} svg`)
+      .append("circle")
+      .attr("cx", this.config.paddingLeft)
+      .attr("cy", value)
+      .attr("r", 5)
+      .attr("fill", this.colorPalette.focusBorder);
+
+    d3.select(`#${this._id} svg`)
+      .append("rect")
+      .attr("x", this.config.paddingLeft - 100)
+      .attr("y", value - 17)
+      .attr("width", 90)
+      .attr("height", 35)
+      .attr("fill", "white");
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr("x", this.config.paddingLeft - 100)
+      .attr("y", value + 3)
+      .text(`Avg: ${formatHoursMinuts(this._data.AverageTimeUsageHoursStr)}`)
+      .style("font-family", "Montserrat")
+      .style("font-size", "13px")
+      .attr("stroke", this.colorPalette.focusBorder);
+  }
+
   private hoverEnterListener(d: TimeUsageWeekDaysDataType, barWidth: number) {
     if (this._onTransition) return;
     let thisIndex = this._data.TimeUsageWeekdays.findIndex(
@@ -512,6 +551,7 @@ class ZoneAnalyticsChart {
     this.DrawBars("Normal");
     this.DrawBars("OverUtilised");
     this.SetupGrid();
+    this.DrawAverageLine();
     this.DrawBarsListeners();
   }
 
