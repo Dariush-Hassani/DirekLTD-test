@@ -350,7 +350,7 @@ class ZoneOccupancyChart {
       .attr(
         "x1",
         (d, i) =>
-          this.config.paddingLeft + (i + 0.5) * bandwidth - barWidth / 2 - 5,
+          this.config.paddingLeft + (i + 0.5) * bandwidth - barWidth / 2 - 10,
       )
       .attr(
         "x2",
@@ -359,7 +359,7 @@ class ZoneOccupancyChart {
           (i + 0.5) * bandwidth -
           barWidth / 2 +
           barWidth +
-          5,
+          10,
       )
 
       .attr("width", barWidth)
@@ -369,7 +369,7 @@ class ZoneOccupancyChart {
       .attr("stroke", this.colorPalette.PeakColor)
       .attr("stroke-width", "2px")
       .attr("class", (d, i) => `bar-peak-${i} bar-peak`)
-      .attr("stroke-dasharray", "5");
+      .attr("stroke-dasharray", "4");
   }
 
   private hoverEnterListener(
@@ -428,7 +428,7 @@ class ZoneOccupancyChart {
 
     let infoContainerWidth = 200;
     let infoContainerHeight = 100;
-    let isRight = thisIndex < Math.ceil(this._data.length / 2);
+    let isRight = thisIndex < Math.floor(this._data.length / 2);
     let fractionSpace = this.config.EmptySpaceBetweenBars / 3;
     let fractionSpaceY = 1;
     let currentBar = document.querySelector(
