@@ -600,8 +600,12 @@ class ZoneOccupancyChart {
         this.hoverEnterListener(d, barWidth, bandwidth);
       })
       .on("touchstart", (e, d) => {
-        this.hoverEnterListener(d, barWidth, bandwidth);
-        e.preventDefault();
+        if (e.touches.length > 1) {
+          this.hoverEnterListener(d, barWidth, bandwidth);
+          e.preventDefault();
+        } else {
+          if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
+        }
       })
       .on("mouseleave", (e, d) => {
         this.hoverLeaveListener(d);
@@ -610,9 +614,6 @@ class ZoneOccupancyChart {
         this.hoverLeaveListener(d);
       })
       .on("click", (e, d) => {
-        if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
-      })
-      .on("touchmove", (e, d) => {
         if (this.ChangeStateCallBack) this.ChangeStateCallBack(d.Zone);
       });
   }
