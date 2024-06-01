@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import ZoneAnalyticsDataType, {
   TimeUsageWeekDaysDataType,
 } from "../Types/ZoneAnalyticsDataType";
+import { formatHoursMinuts } from "../_helper";
 class ZoneAnalyticsChart {
   //public fields
   public colorPalette = {
@@ -25,7 +26,7 @@ class ZoneAnalyticsChart {
     paddingLeft: 100,
     paddingBottom: 40,
     paddingRight: 0,
-    opacityHover: 0.6,
+    opacityHover: 0.3,
     focusBorderEmptySpace: 8,
     infoTriangleWidth: 8,
     transitionDuration: 1000,
@@ -322,6 +323,187 @@ class ZoneAnalyticsChart {
       .style("stroke-dasharray", `6px`);
   }
 
+  private hoverEnterListener(
+    d: TimeUsageWeekDaysDataType,
+    barWidth: number,
+    bandwidth: number,
+  ) {
+    if (this._onTransition) return;
+    let thisIndex = this._data.TimeUsageWeekdays.findIndex(
+      (x) => x.weekday === d.weekday,
+    );
+
+    for (let i = 0; i < this._data.TimeUsageWeekdays.length; i++) {
+      if (i !== thisIndex) {
+        d3.select(`#${this._id} .bar-Empty-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+        d3.select(`#${this._id} .bar-OverUtilised-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+        d3.select(`#${this._id} .bar-UnderUtilised-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+        d3.select(`#${this._id} .bar-Normal-${i}`)
+          .transition()
+          .style("opacity", this.config.opacityHover);
+      }
+    }
+
+    let infoContainerWidth = 220;
+    let infoContainerHeight = 100;
+    let isRight =
+      thisIndex < Math.floor(this._data.TimeUsageWeekdays.length / 2);
+    let currentBar = document.querySelector(
+      `#${this._id} svg .handler-bars-${thisIndex}`,
+    ) as HTMLElement;
+    let upPos =
+      (parseInt(currentBar.getAttribute("y") as string) +
+        parseInt(currentBar.getAttribute("height") as string)) /
+      2;
+
+    let fractionSpace = this.config.infoTriangleWidth;
+    let leftPos = parseInt(currentBar.getAttribute("x") as string) + barWidth;
+    let rightPos = parseInt(currentBar.getAttribute("x") as string);
+
+    let centerPos = upPos + infoContainerHeight / 2;
+
+    d3.select(`#${this._id} svg`)
+      .append("polygon")
+      .attr(
+        "points",
+        `${isRight ? leftPos - fractionSpace : rightPos + fractionSpace},${centerPos} ${isRight ? leftPos : rightPos},${centerPos + fractionSpace} ${isRight ? leftPos : rightPos},${centerPos - fractionSpace}`,
+      )
+      .attr("class", `triangle-${thisIndex}`)
+      .attr("fill", "white");
+
+    d3.select(`#${this._id} svg`)
+      .append("rect")
+      .attr("y", upPos)
+      .attr("x", isRight ? leftPos : rightPos - infoContainerWidth)
+      .attr("width", infoContainerWidth)
+      .attr("height", infoContainerHeight)
+      .attr("fill", "white")
+      .attr("class", `info-container-${thisIndex}`)
+      .style("filter", "drop-shadow( rgba(1, 1, 1, 0.1) 0px 0px 2px")
+      .attr("rx", 7)
+      .attr("ry", 7);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr("x", isRight ? leftPos + 15 : rightPos - infoContainerWidth + 15)
+      .attr("y", upPos + 25)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`Empty Use: ${formatHoursMinuts(d.EmptyHoursStr)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.emptyColor);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr("x", isRight ? leftPos + 15 : rightPos - infoContainerWidth + 15)
+      .attr("y", upPos + 45)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`UnderUtilised Use: ${formatHoursMinuts(d.UnderUtilisedHoursStr)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.underUtilisedColor);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr("x", isRight ? leftPos + 15 : rightPos - infoContainerWidth + 15)
+      .attr("y", upPos + 65)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`Normal Use: ${formatHoursMinuts(d.NormalHoursStr)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.NormalColor);
+
+    d3.select(`#${this._id} svg`)
+      .append("text")
+      .attr("x", isRight ? leftPos + 15 : rightPos - infoContainerWidth + 15)
+      .attr("y", upPos + 85)
+      .attr("class", `info-text-${thisIndex}`)
+      .text(`OverUtilised Use: ${formatHoursMinuts(d.OverUtilisedHoursStr)}`)
+      .style("font-family", "Montserrat")
+      .style("font-weight", "bold")
+      .style("font-size", "14px")
+      .style("fill", this.colorPalette.OverUtilisedColor);
+  }
+
+  private hoverLeaveListener(d: TimeUsageWeekDaysDataType) {
+    if (this._onTransition) return;
+
+    let thisIndex = this._data.TimeUsageWeekdays.findIndex(
+      (x) => x.weekday === d.weekday,
+    );
+
+    for (let i = 0; i < this._data.TimeUsageWeekdays.length; i++) {
+      if (i !== thisIndex) {
+        d3.select(`#${this._id} .bar-Empty-${i}`)
+          .transition()
+          .style("opacity", 1);
+        d3.select(`#${this._id} .bar-OverUtilised-${i}`)
+          .transition()
+          .style("opacity", 1);
+        d3.select(`#${this._id} .bar-UnderUtilised-${i}`)
+          .transition()
+          .style("opacity", 1);
+        d3.select(`#${this._id} .bar-Normal-${i}`)
+          .transition()
+          .style("opacity", 1);
+      } else {
+        d3.selectAll(`#${this._id} .info-container-${i}`).remove();
+        d3.selectAll(`#${this._id} .triangle-${i}`).remove();
+        d3.selectAll(`#${this._id} .info-text-${i}`).remove();
+      }
+    }
+  }
+
+  private DrawBarsListeners(): void {
+    let bandwidth = this._xScaleFunction.bandwidth();
+    let barWidth = bandwidth - this.config.EmptySpaceBetweenBars;
+
+    d3.select(`#${this._id} svg`)
+      .selectAll()
+      .data(this._data.TimeUsageWeekdays)
+      .enter()
+      .append("rect")
+      .attr(
+        "x",
+        (d, i) =>
+          this.config.paddingLeft + (i + 0.5) * bandwidth - barWidth / 2,
+      )
+      .attr("width", barWidth)
+      .attr(
+        "y",
+        this._yScaleFunction(this._data.WorkingHours) + this.config.paddingTop,
+      )
+      .attr(
+        "height",
+        this._chartHeight -
+          (this.config.paddingBottom + this.config.paddingTop),
+      )
+      .attr("class", (d, i) => `handler-bars handler-bars-${i}`)
+      .attr("fill", "rgba(0,0,0,0)")
+      .style("cursor", "pointer")
+      .on("mouseenter", (e, d) => {
+        this.hoverEnterListener(d, barWidth, bandwidth);
+      })
+      .on("touchstart", (e, d) => {
+        this.hoverEnterListener(d, barWidth, bandwidth);
+      })
+      .on("mouseleave", (e, d) => {
+        this.hoverLeaveListener(d);
+      })
+      .on("touchend", (e, d) => {
+        this.hoverLeaveListener(d);
+      });
+  }
+
   //public methods
   public DrawChart(): void {
     this.SetupLayout();
@@ -334,6 +516,7 @@ class ZoneAnalyticsChart {
     this.DrawBars("Normal");
     this.DrawBars("OverUtilised");
     this.SetupGrid();
+    this.DrawBarsListeners();
   }
 
   public Destroy() {

@@ -9,5 +9,13 @@ export function getWeekDayName(weekDayNumber: number): string {
   else return "";
 }
 export function formatHoursMinuts(hoursMinutes: string): string {
-  return "";
+  let rv = "";
+  let hourMin = hoursMinutes.split(":");
+  let hour = hourMin[0];
+  let min = hourMin[1];
+  if (min && min.length < 2) min = "0" + min;
+  if (parseInt(hour)) rv += `${hour}h `;
+  if (parseInt(min)) rv += `${min}m`;
+  if (!parseInt(hour) && !parseInt(min)) rv = "0";
+  return rv;
 }
