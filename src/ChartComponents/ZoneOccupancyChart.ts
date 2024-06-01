@@ -260,6 +260,10 @@ class ZoneOccupancyChart {
         "y",
         (d) => this._yScaleFunction(d[barType]) + this.config.paddingTop,
       )
+      .transition()
+      .duration(700)
+      .delay(100)
+      .ease(d3.easeSinInOut)
       .attr(
         "height",
         (d) =>
@@ -357,7 +361,9 @@ class ZoneOccupancyChart {
           barWidth +
           5,
       )
+
       .attr("width", barWidth)
+
       .attr("y1", (d) => this._yScaleFunction(d.Peak) + this.config.paddingTop)
       .attr("y2", (d) => this._yScaleFunction(d.Peak) + this.config.paddingTop)
       .attr("stroke", this.colorPalette.PeakColor)
