@@ -638,15 +638,5 @@ class ZoneOccupancyChart {
       .on("touchend", null);
     d3.selectAll(`#${this._id}`).remove();
   }
-
-  // public ChangeDimension(width: number, height: number): void {
-  //   this._chartWidth =
-  //     width - (this.config.marginLeft + this.config.marginRight);
-  //   this._chartHeight =
-  //     height - (this.config.marginBottom + this.config.marginTop);
-  //   this._width = width;
-  //   this._height = height;
-  //   this.DrawChart();
-  // }
 }
 export default ZoneOccupancyChart;

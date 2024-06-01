@@ -157,6 +157,20 @@ class ZoneAndTime {
       this.DrawState1(),
     );
   }
+
+  public changeDimensions(width: number, height: number) {
+    if (this._selectedZone === "") {
+      this._ZOChart?.Destroy();
+      this._width = width;
+      this._height = height;
+      this.DrawState1();
+    } else {
+      this._ZAChart?.Destroy();
+      this._width = width;
+      this._height = height;
+      this.DrawState2();
+    }
+  }
 }
 
 export default ZoneAndTime;
